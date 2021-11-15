@@ -1,0 +1,4 @@
+peewee
+aiogram
+aiogram-forms
+peewee-migrate
