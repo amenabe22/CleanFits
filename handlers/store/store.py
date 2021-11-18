@@ -13,37 +13,19 @@ from aiogram.utils.exceptions import MessageNotModified
 from aiogram.dispatcher.filters.builtin import Message, Filter
 from crud.core import create_store, check_store_stat, get_store
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from ..post import post
 
 vote_cb = CallbackData('cat', 'action')  # vote:<action>
 loc_cb = CallbackData('loc', 'action')  # vote:<action>
 st_cb = CallbackData('store', 'action', 'stid')
 likes = {}
 
-
 class StForm(StatesGroup):
     name = State()
     category = State()
     location = State()
-    # final = State()
 
-
-# async def save_store():
-#     data = await NewStoreForm.get_data()
-#     create_store(
-#         {
-#             "store_name": data["NewStoreForm:store_name"]
-#         },
-#         types.Chat.get_current().id
-#     )
-#     StForm.next()
-#     print(data, "store info saved")
-#     await bot.send_message(
-#         chat_id=types.Chat.get_current().id,
-#         text="Congrats your store has been created !!!",
-#         reply_markup=make_markup(BASIC_ACCOUNT)
-#     )
-
-def get_store_manager_opts():
+def get_store_manager_opts(sid):
     sman = [
         {"label": "📌 Add Post", "id": "addpost"},
         {"label": "📣 Promote", "id": "promote"},
@@ -52,7 +34,7 @@ def get_store_manager_opts():
     ikb = types.InlineKeyboardMarkup(row_width=2)
     ikb.add(*[
         types.InlineKeyboardButton(
-            x["label"], callback_data=vote_cb.new(action=x["id"], )) for x in sman
+            x["label"], callback_data=post.post_cb.new(action=x["id"], sid=sid)) for x in sman
     ])
     return ikb
 
@@ -150,7 +132,7 @@ async def callback_store_action(query: types.CallbackQuery, callback_data: typin
         "You have selected {}".format(store.store_name),
         query.from_user.id,
         query.message.message_id,
-        reply_markup=get_store_manager_opts()
+        reply_markup=get_store_manager_opts(store.id)
     )
 
 
