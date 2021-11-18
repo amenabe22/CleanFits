@@ -6,7 +6,13 @@ from utils.bot_helpers import make_markup
 from constants.menu_keyboards import BASIC_ACCOUNT
 from aiogram.dispatcher.filters.builtin import CommandStart
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
+from aiogram.dispatcher.filters.state import State, StatesGroup
 from crud.core import create_bot_user, user_exists, update_basic
+
+class Form(StatesGroup):
+    name = State()  # Will be represented in storage as 'Form:name'
+    age = State()  # Will be represented in storage as 'Form:age'
+    gender = State()  # Will be represented in storage as 'Form:gender'
 
 
 async def _show_info():

@@ -12,7 +12,7 @@ async def init_bot(dispatcher):
 def main():
     # create tables
     create_tables()
-    executor.start_polling(dp, on_startup=init_bot)
+    executor.start_polling(dp, on_startup=init_bot, skip_updates=True)
 
 
 if __name__ == '__main__':

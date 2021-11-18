@@ -29,6 +29,8 @@ class BotUser(BaseModel):
 
 class Store(BaseModel):
     store_name = pw.CharField(max_length=300)
+    category = pw.CharField(choices=[('dress', 'Dresses')])
+    has_location = pw.BooleanField(default=False)
     user = ForeignKeyField(BotUser, backref='store')
     timestamp = pw.DateTimeField(default=datetime.datetime.now)
 

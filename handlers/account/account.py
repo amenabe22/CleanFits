@@ -6,7 +6,7 @@ from utils.bot_formats import format_account
 
 @dp.message_handler(AccountMenuMessage())
 async def store_message(message: Message):
-    if message.text == 'Account':
+    if message.text == '🔓 Account':
         user = user_data_with_bid(message.chat.id)        
         acc_format = format_account(user)
         await message.answer(acc_format)

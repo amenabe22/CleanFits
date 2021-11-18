@@ -23,10 +23,12 @@ class NewStoreForm(forms.Form):
     ])
 
     store_name = fields.StringField('Store Name')
-    location = fields.ChoicesField(
-        'Has Physical Location', LOCATION_CHOICES, reply_keyboard=LOCATION_KEYBOARD)
+    # location = fields.ChoicesField(
+    #     'Has Physical Location', LOCATION_CHOICES, reply_keyboard=LOCATION_KEYBOARD)
 
-    # language = fields.ChoicesField(
-    #     'Language', LANGUAGE_CHOICES, reply_keyboard=LANGUAGE_KEYBOARD)
-    email = fields.EmailField(
-        'Email', validation_error_message='Wrong email format!')
+    language = fields.ChoicesField(
+        'Language', LOCATION_CHOICES, reply_keyboard=InlineKeyboardMarkup(resize_keyboard=True).add(*[
+            InlineKeyboardButton(x) for x in LOCATION_CHOICES 
+        ]))
+    # email = fields.EmailField(
+    #     'Email', validation_error_message='Wrong email format!')
