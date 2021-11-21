@@ -35,6 +35,14 @@ class Store(BaseModel):
     timestamp = pw.DateTimeField(default=datetime.datetime.now)
 
 
+class Post(BaseModel):
+    name = pw.CharField(max_length=400)
+    desc = pw.TextField()
+    price = pw.BigIntegerField()
+    brand = pw.CharField(max_length=100)
+    quick_post = pw.BooleanField(default=False)
+    store = ForeignKeyField(Store, backref='store', null=True)
+    timestamp = pw.DateTimeField(default=datetime.datetime.now)
 # class User(BaseModel):
 #     username = TextField()
 

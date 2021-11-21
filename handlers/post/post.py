@@ -26,10 +26,10 @@ class PostForm(StatesGroup):
 async def process_single_pic(message: types.Message,  state: FSMContext):
     async with state.proxy() as data:
         # await state.set_state(PostForm.item_type)
+        await state.finish()
         formatted = format_post(data)
         data["pic"] = message.photo[0].file_id
         await message.answer(formatted, reply_markup=inline_kb(POST_USER_MANAGE, post_cb))
-        await state.finish()
     # await message.answer("Form complete")
 
 
@@ -43,14 +43,14 @@ async def process_pics(messages: [types.Message],  state: FSMContext):
         # if ix == 0:
         #     media.attach_photo(x.photo[0].file_id, caption="He",)
         media.attach_photo(x.photo[0].file_id)
-    async with state.proxy() as data:
-        # await state.set_state(PostForm.item_type)
-        await state.finish()
+    # async with state.proxy() as data:
+    #     # await state.set_state(PostForm.item_type)
+    #     await state.finish()
 
-    # print(media, "whoa")
-    # await bot.send_photo(-1001702851184, mgs)
-    await bot.send_media_group(-1001702851184, media)
-    await bot.send_message(-1001702851184, "some message", reply_markup=inline_kb(POST_MANAGE, post_cb))
+    # # print(media, "whoa")
+    # # await bot.send_photo(-1001702851184, mgs)
+    # await bot.send_media_group(-1001702851184, media)
+    # await bot.send_message(-1001702851184, "some message", reply_markup=inline_kb(POST_MANAGE, post_cb))
     # # await bot.send_message(-1001702851184, "Wazzaa")
     await messages[0].answer("Form complete")
 
@@ -144,8 +144,10 @@ async def callback_post_approve(query: types.CallbackQuery, callback_data: typin
                 # reply_markup=brands_kb()
                 # reply_markup=types.ReplyKeyboardRemove()
             )
+            # await bot.answer_callback_query(query.id, "THIS IS AN ALERT", show_alert=True)
+            # await bot.answer_callback_query
             await bot.send_message(
-                query.from_user.idquery.from_user.id,
+                query.from_user.id,
                 "Thanks your post is sent for moderation we will let you know once it's approved !!!",
             )
 
@@ -167,3 +169,15 @@ async def callback_post_brand(query: types.CallbackQuery, callback_data: typing.
         # reply_markup=brands_kb()
         # reply_markup=types.ReplyKeyboardRemove()
     )
+
+
+@ dp.callback_query_handler(post_cb.filter(action=['approve']))
+async def callback_post_publish(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
+    await query.answer()
+    callback_data_action = callback_data['action']
+    print(callback_data)
+    pass
+
+@ dp.callback_query_handler(post_cb.filter(action=['decline', 'report']))
+async def callback_post_decline(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
+    pass
