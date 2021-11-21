@@ -8,3 +8,12 @@ def make_markup(button_rows: list):
     for button_row in button_rows:
         kb.row(*button_row)
     return kb
+
+
+def format_post(data):
+    # store = get
+    print(data)
+    formatted = """Item Name: {}\n\nPrice: {}\n\nDetail: {}\n\nBrand: {}\n\n\n#{}""".format(
+        data["item_name"],data["price"], data["desc"], data["brand"], data["item_type"]
+    )
+    return formatted
