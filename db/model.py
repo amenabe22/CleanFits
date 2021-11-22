@@ -36,11 +36,17 @@ class Store(BaseModel):
 
 
 class Post(BaseModel):
+    id = PrimaryKeyField()
     name = pw.CharField(max_length=400)
     desc = pw.TextField()
     price = pw.BigIntegerField()
     brand = pw.CharField(max_length=100)
     quick_post = pw.BooleanField(default=False)
+    approved = pw.BooleanField(default=False)
+    contact_method= pw.CharField(
+        choices=[('phone', 'telegram/')], max_length=300,null=True)
+    phone = pw.CharField(max_length=300, null=True)
+    username = pw.CharField(max_length=300, null=True)
     store = ForeignKeyField(Store, backref='store', null=True)
     timestamp = pw.DateTimeField(default=datetime.datetime.now)
 # class User(BaseModel):

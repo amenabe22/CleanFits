@@ -32,3 +32,9 @@ STORE_OPTS = [
     {"label": "📣 Promote", "id": "promote"},
     {"label": "❌ Close Store", "id": "close"}
 ]
+
+
+CONTACT_OPTS = [
+    {"label": "💭 Telegram DM", "id": "telegram"},
+    {"label": "📲 Phone", "id": "phone"},
+]
