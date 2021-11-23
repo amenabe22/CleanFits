@@ -29,7 +29,7 @@ class BotUser(BaseModel):
 
 class Store(BaseModel):
     store_name = pw.CharField(max_length=300)
-    category = pw.CharField(choices=[('dress', 'Dresses')])
+    category = pw.CharField(choices=[('dress', 'Dresses')],null=True)
     has_location = pw.BooleanField(default=False)
     user = ForeignKeyField(BotUser, backref='store')
     timestamp = pw.DateTimeField(default=datetime.datetime.now)
@@ -41,10 +41,12 @@ class Post(BaseModel):
     desc = pw.TextField()
     price = pw.BigIntegerField()
     brand = pw.CharField(max_length=100)
+    category = pw.CharField(max_length=400)
     quick_post = pw.BooleanField(default=False)
     approved = pw.BooleanField(default=False)
-    contact_method= pw.CharField(
-        choices=[('phone', 'telegram/')], max_length=300,null=True)
+    pic = pw.TextField(null=True, default="")
+    contact_method = pw.CharField(
+        choices=[('phone', 'telegram')], max_length=300, null=True)
     phone = pw.CharField(max_length=300, null=True)
     username = pw.CharField(max_length=300, null=True)
     store = ForeignKeyField(Store, backref='store', null=True)

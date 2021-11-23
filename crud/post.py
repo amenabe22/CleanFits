@@ -25,6 +25,8 @@ def create_post(post):
             brand=post["brand"],
             contact_method=post["c_method"],
             phone=p,
+            pic=post["pic"],
+            category=post["item_type"],
             username=username,
             store=store
         )
@@ -37,4 +39,7 @@ def create_post(post):
 def set_approval(post, status):
     x = Post.update(approved=status).where(Post.id == post)
     x.execute()
-    print(x, "dawg")
+
+
+def get_post(post):
+    return Post.get_by_id(post)

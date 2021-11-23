@@ -2,18 +2,28 @@ import typing
 from aiogram import types
 from db.model import Post
 from loader import dp, bot
+from crud.core import get_store
 from buttons.inlines import inline_kb
-
 from filters.core import QuickPostFilter
 from aiogram.dispatcher import FSMContext
-from crud.post import create_post, set_approval
 from aiogram.utils.callback_data import CallbackData
-from utils.bot_helpers import format_post, format_post_final
+from crud.post import create_post, set_approval, get_post
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram_media_group import MediaGroupFilter, media_group_handler
 from constants.inline_kbs import BRANDS, PROD_CATS, POST_MANAGE, POST_USER_MANAGE, CONTACT_OPTS
+from utils.bot_helpers import format_post, format_post_final, format_from_post, format_from_post_final
 
 post_cb = CallbackData('post', 'action', 'sid')
+
+
+def inline_post_kb(items, cbk, pst):
+    ikb = types.InlineKeyboardMarkup(row_width=2)
+    ikb.add(*[
+        types.InlineKeyboardButton(
+            x["label"], callback_data=cbk.new(
+                action=x["id"], sid=pst)) for x in items
+    ])
+    return ikb
 
 
 def posted_markup(post, message):
@@ -88,6 +98,7 @@ async def process_contact(message: types.Message, state: FSMContext):
         await message.answer(format_post(data), reply_markup=inline_kb(POST_USER_MANAGE, post_cb))
 
         await state.finish()
+
 
 @dp.message_handler(MediaGroupFilter(), state=PostForm.pictures, content_types=types.ContentType.PHOTO)
 @media_group_handler
@@ -184,20 +195,32 @@ async def callback_post_type(query: types.CallbackQuery, callback_data: typing.D
 async def callback_post_approve(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     await query.answer()
     callback_data_action = callback_data['action']
+    print(callback_data, "bitch stfu")
     print(callback_data_action)
+    pst = get_post(callback_data['sid'])
     if callback_data_action == "publish":
         # callback_data_action = callback_data['action']
         async with state.proxy() as data:
             print("---------------")
             print(data, "whoa")
             print("---------------")
-            pst = create_post(data)
-            await bot.send_photo(
-                -1001702851184, data["pic"],
-                reply_markup=post_inline_kb(post_cb, pst),
-                caption=format_post_final(data))
+            # pst = create_post(data)
+            if not pst.quick_post:
+                # store = get_store(data["store"])
+                await bot.send_photo(
+                    -1001702851184, pst.pic,
+                    reply_markup=post_inline_kb(
+                        post_cb, pst),
+                    caption=format_from_post_final(pst, pst.store))
+            else:
+                await bot.send_photo(
+                    -1001702851184, pst.pic,
+                    reply_markup=post_inline_kb(
+                        post_cb, pst),
+                    caption=format_from_post_final(pst))
+
             await bot.edit_message_text(
-                format_post(data),
+                format_from_post(pst),
                 # f'You voted {callback_data_action}! Now you have {12} vote[s].',
                 query.from_user.id,
                 query.message.message_id,
@@ -218,26 +241,30 @@ async def callback_contact_method(query: types.CallbackQuery, callback_data: typ
     await query.answer()
     callback_data_action = callback_data['action']
     async with state.proxy() as data:
-        data["c_method"] = callback_data_action
 
         if(callback_data_action == "telegram"):
+            data["c_method"] = "telegram"
             data["contact"] = query.message.chat.username
             print(query.message.from_user.id, "whoa man")
-            await bot.edit_message_text(
-                "Contact method saved",
-                query.from_user.id,
-                query.message.message_id,
-            )
+            # await bot.edit_message_text(
+            #     "Contact method saved",
+            #     query.from_user.id,
+            #     query.message.message_id,
+            # )
+            # await state.set_state(PostForm.contact)
+            # await state.finish()
+            pst = create_post(data)
             formatted = format_post(data)
-            await state.finish()
             await bot.edit_message_text(formatted,
                                         query.from_user.id,
                                         query.message.message_id,
-                                        reply_markup=inline_kb(
-                                            POST_USER_MANAGE, post_cb)
+                                        reply_markup=inline_post_kb(
+                                            POST_USER_MANAGE, post_cb, pst.id),
                                         )
+            await state.finish()
 
         else:
+            data["c_method"] = "phone"
             await state.set_state(PostForm.contact)
             await bot.edit_message_text(
                 "Please Enter Your prefered phone number.",
@@ -268,6 +295,7 @@ async def callback_post_brand(query: types.CallbackQuery, callback_data: typing.
 @ dp.callback_query_handler(post_cb.filter(action=['approve']))
 async def callback_post_publish(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     await query.answer()
+    print(callback_data, "bissh")
     # callback_data_action = callback_data['action']
     set_approval(callback_data["sid"], True)
     txt = "Approved by @{}\n\n{}".format(
