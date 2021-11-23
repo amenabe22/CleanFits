@@ -16,6 +16,15 @@ from utils.bot_helpers import format_post, format_post_final, format_from_post, 
 post_cb = CallbackData('post', 'action', 'sid')
 
 
+def message_link_btn(message_id):
+    ikb = types.InlineKeyboardMarkup(row_width=1)
+    link = "https://t.me/cleanfits/"+message_id
+    ikb.add(*[types.InlineKeyboardButton(
+        "See Post", url=link
+    )])
+    return ikb
+
+
 def inline_post_kb(items, cbk, pst):
     ikb = types.InlineKeyboardMarkup(row_width=2)
     ikb.add(*[
@@ -26,15 +35,23 @@ def inline_post_kb(items, cbk, pst):
     return ikb
 
 
-def posted_markup(post, message):
+def posted_markup(message, post):
     ikb = types.InlineKeyboardMarkup(row_width=2)
     ikb.add(*[
         types.InlineKeyboardButton(
-            x["label"], switch_inline_query=message) for x in [
+            x["label"], url='https://t.me/share/url?url='+message) for x in [
             {"label": "🏹 Share", "id": "share"},
-            # {"label": "🤙 Contact", "id": "decline"},
         ]
     ])
+    print(post.contact_method, "bitch")
+    if post.contact_method == "telegram":
+        ikb.add(
+            types.InlineKeyboardButton(
+                x["label"], url='https://t.me/'+post.username) for x in [
+                {"label": "🤙 Contact", "id": "contact"},
+            ]
+        )
+
     return ikb
 
 
@@ -94,8 +111,9 @@ async def process_single_pic(message: types.Message,  state: FSMContext):
 async def process_contact(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['contact'] = message.text
+        pst = create_post(data, message.chat.id)
         # await state.finish()
-        await message.answer(format_post(data), reply_markup=inline_kb(POST_USER_MANAGE, post_cb))
+        await message.answer(format_post(data), reply_markup=inline_post_kb(POST_USER_MANAGE, post_cb, pst))
 
         await state.finish()
 
@@ -253,7 +271,10 @@ async def callback_contact_method(query: types.CallbackQuery, callback_data: typ
             # )
             # await state.set_state(PostForm.contact)
             # await state.finish()
-            pst = create_post(data)
+            print("assssssssss")
+            print(query.message.chat)
+            print("assssssssss")
+            pst = create_post(data, query.message.chat)
             formatted = format_post(data)
             await bot.edit_message_text(formatted,
                                         query.from_user.id,
@@ -295,9 +316,8 @@ async def callback_post_brand(query: types.CallbackQuery, callback_data: typing.
 @ dp.callback_query_handler(post_cb.filter(action=['approve']))
 async def callback_post_publish(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     await query.answer()
-    print(callback_data, "bissh")
-    # callback_data_action = callback_data['action']
-    set_approval(callback_data["sid"], True)
+    post = set_approval(callback_data["sid"], True)
+
     txt = "Approved by @{}\n\n{}".format(
         query.from_user.username, query.message.caption)
 
@@ -308,12 +328,16 @@ async def callback_post_publish(query: types.CallbackQuery, callback_data: typin
         chat_id=-1001702851184,
         message_id=query.message.message_id
     )
-    await bot.send_photo(
+    post_buttons = posted_markup(
+        p_txt, post)
+    response = await bot.send_photo(
         chat_id="@cleanfits",
         photo=query.message.photo[0].file_id,
         caption=p_txt,
-        reply_markup=posted_markup(callback_data["sid"], p_txt)
+        reply_markup=post_buttons
     )
+    message = "Congrats your post has been approved."
+    await bot.send_message(post.user.bot_id, message, reply_markup=message_link_btn(str(response.message_id)))
 
 
 @ dp.callback_query_handler(post_cb.filter(action=['decline', 'report']))

@@ -48,7 +48,8 @@ class Post(BaseModel):
     contact_method = pw.CharField(
         choices=[('phone', 'telegram')], max_length=300, null=True)
     phone = pw.CharField(max_length=300, null=True)
-    username = pw.CharField(max_length=300, null=True)
+    username = pw.CharField(max_length=300, default="", null=True)
+    user = ForeignKeyField(BotUser, backref='user', null=True)
     store = ForeignKeyField(Store, backref='store', null=True)
     timestamp = pw.DateTimeField(default=datetime.datetime.now)
 # class User(BaseModel):

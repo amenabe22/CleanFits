@@ -27,9 +27,11 @@ def format_from_post(post):
 
 
 def format_from_post_final(post, store=None):
-    contact_message = "@" + post.username
+    contact_message = "@"
     if post.contact_method == "phone":
         contact_message = post.phone
+    else:
+        contact_message += post.username
     if store:
         formatted = """Store: {}\n\nItem Name: {}\n\nPrice: {}\n\nDetail: {}\n\nBrand: {}\n\nContact: {}\n\n#{} #{}\n""".format(
             store.store_name, post.name, post.price, post.desc, post.brand,
@@ -39,7 +41,7 @@ def format_from_post_final(post, store=None):
         formatted = """\nItem Name: {}\n\nPrice: {}\n\nDetail: {}\n\nBrand: {}\n\nContact: {}\n\n#{}\n""".format(
             post.name, post.price, post.desc, post.brand,
             contact_message, post.category
-        )   
+        )
 
     return formatted
 

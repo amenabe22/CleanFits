@@ -1,7 +1,9 @@
 from db.model import Post, Store, BotUser
 
 
-def create_post(post):
+def create_post(post, chat_id):
+    bot_user = BotUser.get(BotUser.bot_id == chat_id)
+    print(bot_user, "The user")
     try:
         print("---------------")
         print(post)
@@ -28,7 +30,8 @@ def create_post(post):
             pic=post["pic"],
             category=post["item_type"],
             username=username,
-            store=store
+            store=store,
+            user=bot_user
         )
         post.save()
         return post
@@ -37,8 +40,10 @@ def create_post(post):
 
 
 def set_approval(post, status):
+    post = Post.get_by_id(post)
     x = Post.update(approved=status).where(Post.id == post)
     x.execute()
+    return post 
 
 
 def get_post(post):
