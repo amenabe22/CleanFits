@@ -3,13 +3,21 @@ from db.model import Post, Store, BotUser
 
 def create_post(post):
     try:
+        print("---------------")
+        print(post)
+        print("---------------")
         p = None
+        store = None
         username = None
         if post["c_method"] == "phone":
             p = post["contact"]
         else:
             username = post["contact"]
-        store = Store.get_by_id(post["store"])
+        if post['quick']:
+            store = None
+        else:
+            store = Store.get_by_id(post["store"])
+
         post = Post(
             name=post["item_name"],
             desc=post["desc"],

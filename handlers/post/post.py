@@ -4,6 +4,7 @@ from db.model import Post
 from loader import dp, bot
 from buttons.inlines import inline_kb
 
+from filters.core import QuickPostFilter
 from aiogram.dispatcher import FSMContext
 from crud.post import create_post, set_approval
 from aiogram.utils.callback_data import CallbackData
@@ -15,13 +16,13 @@ from constants.inline_kbs import BRANDS, PROD_CATS, POST_MANAGE, POST_USER_MANAG
 post_cb = CallbackData('post', 'action', 'sid')
 
 
-def posted_markup(post):
+def posted_markup(post, message):
     ikb = types.InlineKeyboardMarkup(row_width=2)
     ikb.add(*[
         types.InlineKeyboardButton(
-            x["label"], callback_data=post_cb.new(action=x["id"], sid=post)) for x in [
-            {"label": "🏹 Share", "id": "approve"},
-            {"label": "🤙 Contact", "id": "decline"},
+            x["label"], switch_inline_query=message) for x in [
+            {"label": "🏹 Share", "id": "share"},
+            # {"label": "🤙 Contact", "id": "decline"},
         ]
     ])
     return ikb
@@ -51,12 +52,22 @@ class PostForm(StatesGroup):
     contact = State()
 
 
+@dp.message_handler(QuickPostFilter())
+async def quick_post(message: types.Message, state: FSMContext):
+    await state.set_state(PostForm.item_name)
+    async with state.proxy() as data:
+        data["quick"] = True
+        await message.answer(
+            "Enter Item Name",
+        )
+
+
 @ dp.message_handler(state=PostForm.pictures, content_types=[types.ContentType.PHOTO])
 # @dp.message_handler( content_types=[types.ContentType.PHOTO])
 async def process_single_pic(message: types.Message,  state: FSMContext):
     async with state.proxy() as data:
         # await state.set_state(PostForm.item_type)
-        # await state.finish()
+        await state.finish()
         data["pic"] = message.photo[0].file_id
         await state.set_state(PostForm.contact_method)
         await bot.send_message(
@@ -73,9 +84,10 @@ async def process_single_pic(message: types.Message,  state: FSMContext):
 async def process_contact(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['contact'] = message.text
-        await state.finish()
+        # await state.finish()
         await message.answer(format_post(data), reply_markup=inline_kb(POST_USER_MANAGE, post_cb))
 
+        await state.finish()
 
 @dp.message_handler(MediaGroupFilter(), state=PostForm.pictures, content_types=types.ContentType.PHOTO)
 @media_group_handler
@@ -135,6 +147,7 @@ async def callback_post_action(query: types.CallbackQuery, callback_data: typing
     async with state.proxy() as data:
         data['store'] = callback_data["sid"]
 
+        data["quick"] = False
     await state.set_state(PostForm.item_name)
     await bot.edit_message_text(
         "Enter Item Name",
@@ -171,6 +184,7 @@ async def callback_post_type(query: types.CallbackQuery, callback_data: typing.D
 async def callback_post_approve(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     await query.answer()
     callback_data_action = callback_data['action']
+    print(callback_data_action)
     if callback_data_action == "publish":
         # callback_data_action = callback_data['action']
         async with state.proxy() as data:
@@ -208,7 +222,6 @@ async def callback_contact_method(query: types.CallbackQuery, callback_data: typ
 
         if(callback_data_action == "telegram"):
             data["contact"] = query.message.chat.username
-            await state.finish()
             print(query.message.from_user.id, "whoa man")
             await bot.edit_message_text(
                 "Contact method saved",
@@ -216,6 +229,7 @@ async def callback_contact_method(query: types.CallbackQuery, callback_data: typ
                 query.message.message_id,
             )
             formatted = format_post(data)
+            await state.finish()
             await bot.edit_message_text(formatted,
                                         query.from_user.id,
                                         query.message.message_id,
@@ -270,9 +284,15 @@ async def callback_post_publish(query: types.CallbackQuery, callback_data: typin
         chat_id="@cleanfits",
         photo=query.message.photo[0].file_id,
         caption=p_txt,
-        reply_markup=posted_markup(callback_data["sid"])
+        reply_markup=posted_markup(callback_data["sid"], p_txt)
     )
+
 
 @ dp.callback_query_handler(post_cb.filter(action=['decline', 'report']))
 async def callback_post_decline(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     pass
+
+
+# @ dp.callback_query_handler(post_cb.filter(action=['share']))
+# async def callback_post_share(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
+#     pass

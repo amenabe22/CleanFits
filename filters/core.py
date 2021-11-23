@@ -20,3 +20,9 @@ class AccountMenuMessage(Filter):
     async def check(self, message: types.Message):
         store_opts = ["🔓 Account", "⚙️ Settings"]
         return message.text in store_opts
+
+
+class QuickPostFilter(Filter):
+    async def check(self, message: types.Message):
+        store_opts = ["👕 Quick Post"]
+        return message.text in store_opts

@@ -7,8 +7,8 @@ from buttons.inlines import inline_kb
 from crud.core import create_bot_user
 from forms.account import NewStoreForm
 from aiogram.dispatcher import FSMContext
-from filters.core import StoreMenuMessage
 from utils.bot_helpers import make_markup
+from filters.core import StoreMenuMessage
 from constants import STORE_DETAIL_BUTTONS
 from constants.inline_kbs import STORE_OPTS
 from aiogram.utils.callback_data import CallbackData
@@ -71,7 +71,7 @@ def store_remove_btns():
     loc_opts = types.InlineKeyboardMarkup()
     loc_opts.add(*[
         types.InlineKeyboardButton(
-            x["label"], callback_data=post.post_cb.new(action=x["id"],sid=x["id"]))
+            x["label"], callback_data=post.post_cb.new(action=x["id"], sid=x["id"]))
         for x in [
             {"label": "Yes !", "id": "syes"},
             {"label": "Not Yet", "id": "sno"}
@@ -125,7 +125,8 @@ async def callback_store_pop_final(query: types.CallbackQuery, callback_data: ty
     await query.answer()
     final_message = "Store successfull removed"
     callback_data_action = callback_data['action']
-    if callback_data_action == "sno": final_message = "Okay"
+    if callback_data_action == "sno":
+        final_message = "Okay"
     await bot.edit_message_text(
         final_message,
         query.from_user.id,
