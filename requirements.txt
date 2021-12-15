@@ -2,3 +2,8 @@ peewee
 aiogram
 aiogram-forms
 peewee-migrate
+peewee-db-evolve
+python-dotenv
+aiogram-media-group
+aioredis
+psycopg2

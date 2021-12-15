@@ -1,15 +1,16 @@
 import datetime
 import peewee as pw
-import peeweedbevolve
 from playhouse.migrate import *
 from peewee_migrate import Router
 from peewee import SqliteDatabase
 from .settings import DB_NAME, DB_HOST, DB_PASS, DB_USER
+# Make sure this import is below peewee
+import peeweedbevolve
 
 # from crud.core import
 
 database = pw.PostgresqlDatabase(
-    DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
+    database=DB_NAME, user=DB_USER, password=DB_PASS, host=DB_HOST)
 # migrator = PostgresqlMigrator(database=database)
 
 
