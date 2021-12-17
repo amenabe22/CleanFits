@@ -14,8 +14,8 @@ from constants.inline_kbs import STORE_OPTS
 from aiogram.utils.callback_data import CallbackData
 from aiogram.utils.exceptions import MessageNotModified
 from aiogram.dispatcher.filters.builtin import Message, Filter
-from crud.core import create_store, check_store_stat, get_store
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from crud.core import create_store, check_store_stat, get_store, delete_store
 
 vote_cb = CallbackData('cat', 'action')  # vote:<action>
 loc_cb = CallbackData('loc', 'action')  # vote:<action>
@@ -93,15 +93,21 @@ def get_loc_opts():
     return loc_opts
 
 
+@ dp.message_handler(commands='add')
+async def store_message_cmd(message: Message, state: FSMContext):
+    stat, stores = check_store_stat(message.chat.id)
+    if len(stores) == 0:
+        await state.set_state(StForm.name)
+        await message.reply("What's the name of your store ?", reply_markup=types.ReplyKeyboardRemove())
+    else:
+        print(stores[0].store_name, "jacked up")
+        await message.reply("Welcome back which store would you like to manage ?",
+                            reply_markup=store_list_kb(stores))
+
+
 @ dp.message_handler(StoreMenuMessage())
 async def store_message(message: Message, state: FSMContext):
     if message.text == '🛍 My Stores':
-        # markup = make_markup(STORE_DETAIL_BUTTONS)
-        # Check if user has a store and show store welcome
-        # await message.answer("Welcome to your store", reply_markup=markup)
-        # Old form handling method
-        # await NewStoreForm.start(callback=save_store)
-        # Generic way of starting form scene
         stat, stores = check_store_stat(message.chat.id)
         if len(stores) == 0:
             await state.set_state(StForm.name)
@@ -124,9 +130,16 @@ async def process_name(message: Message, state: FSMContext):
 async def callback_store_pop_final(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     await query.answer()
     final_message = "Store successfull removed"
+
     callback_data_action = callback_data['action']
-    if callback_data_action == "sno":
-        final_message = "Okay"
+
+    async with state.proxy() as data:
+        if callback_data_action == "sno":
+            final_message = "Okay"
+        else:
+            store = data["cbk"]["sid"]
+            delete_store(store)
+
     await bot.edit_message_text(
         final_message,
         query.from_user.id,
@@ -197,6 +210,7 @@ async def callback_vote_action(query: types.CallbackQuery, callback_data: typing
 async def callback_close_store(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     await query.answer()
     async with state.proxy() as data:
+        data["cbk"] = callback_data
         await bot.edit_message_text(
             "Are you sure you want to remove this store ?",
             query.from_user.id,

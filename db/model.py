@@ -30,9 +30,9 @@ class BotUser(BaseModel):
 
 class Store(BaseModel):
     store_name = pw.CharField(max_length=300)
-    category = pw.CharField(choices=[('dress', 'Dresses')],null=True)
+    category = pw.CharField(choices=[('dress', 'Dresses')], null=True)
     has_location = pw.BooleanField(default=False)
-    user = ForeignKeyField(BotUser, backref='store')
+    user = ForeignKeyField(BotUser, backref='store', on_delete='CASCADE')
     timestamp = pw.DateTimeField(default=datetime.datetime.now)
 
 
@@ -50,32 +50,11 @@ class Post(BaseModel):
         choices=[('phone', 'telegram')], max_length=300, null=True)
     phone = pw.CharField(max_length=300, null=True)
     username = pw.CharField(max_length=300, default="", null=True)
-    user = ForeignKeyField(BotUser, backref='user', null=True)
-    store = ForeignKeyField(Store, backref='store', null=True)
+    user = ForeignKeyField(BotUser, backref='user',
+                           null=True, on_delete='CASCADE')
+    store = ForeignKeyField(Store, backref='store',
+                            null=True, on_delete='CASCADE')
     timestamp = pw.DateTimeField(default=datetime.datetime.now)
-# class User(BaseModel):
-#     username = TextField()
-
-
-# class Tweet(BaseModel):
-#     content = TextField()
-    # timestamp = DateTimeField(default=datetime.now)
-#     user = ForeignKeyField(User, backref='tweets')
-
-
-# class Favorite(BaseModel):
-    # user = ForeignKeyField(User, backref='favorites')
-#     tweet = ForeignKeyField(Tweet, backref='favorites')
-
-# def run_migrations():
-#     # Create migration
-#     router.create('migration_name')
-
-#     # Run migration/migrations
-#     router.run('migration_name')
-
-#     # Run all unapplied migrations
-#     router.run()
 
 
 def create_tables():

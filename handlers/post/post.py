@@ -43,13 +43,12 @@ def posted_markup(message, post):
             {"label": "🏹 Share", "id": "share"},
         ]
     ])
-    print(post.contact_method, "bitch")
+    print(post.username, "bitch")
     if post.contact_method == "telegram":
         ikb.add(
             types.InlineKeyboardButton(
-                x["label"], url='https://t.me/'+post.username) for x in [
-                {"label": "🤙 Contact", "id": "contact"},
-            ]
+                text='🤙 Contact', url='https://t.me/'+post.username,
+            )
         )
 
     return ikb
@@ -78,6 +77,14 @@ class PostForm(StatesGroup):
     contact_method = State()
     contact = State()
 
+@dp.message_handler(commands='quick')
+async def quick_post_cmd(message: types.Message, state: FSMContext):
+    await state.set_state(PostForm.item_name)
+    async with state.proxy() as data:
+        data["quick"] = True
+        await message.answer(
+            "Enter Item Name",
+        )
 
 @dp.message_handler(QuickPostFilter())
 async def quick_post(message: types.Message, state: FSMContext):
@@ -113,7 +120,7 @@ async def process_contact(message: types.Message, state: FSMContext):
         data['contact'] = message.text
         pst = create_post(data, message.chat.id)
         # await state.finish()
-        await message.answer(format_post(data), reply_markup=inline_post_kb(POST_USER_MANAGE, post_cb, pst))
+        await message.answer(text=format_post(data), parse_mode='HTML', reply_markup=inline_post_kb(POST_USER_MANAGE, post_cb, pst))
 
         await state.finish()
 
@@ -219,10 +226,6 @@ async def callback_post_approve(query: types.CallbackQuery, callback_data: typin
     if callback_data_action == "publish":
         # callback_data_action = callback_data['action']
         async with state.proxy() as data:
-            print("---------------")
-            print(data, "whoa")
-            print("---------------")
-            # pst = create_post(data)
             if not pst.quick_post:
                 # store = get_store(data["store"])
                 await bot.send_photo(
@@ -328,14 +331,21 @@ async def callback_post_publish(query: types.CallbackQuery, callback_data: typin
         chat_id=-1001702851184,
         message_id=query.message.message_id
     )
-    post_buttons = posted_markup(
-        p_txt, post)
-    response = await bot.send_photo(
-        chat_id="@cleanfits",
-        photo=query.message.photo[0].file_id,
-        caption=p_txt,
-        reply_markup=post_buttons
-    )
+    print("^"*30)
+    print(p_txt)
+    print("^"*30)
+    print(query.message.caption_entities)
+    print("^"*30)
+    try:
+        response = await bot.send_photo(
+            caption_entities=query.message.caption_entities,
+            chat_id="@cleanfits",
+            photo=query.message.photo[0].file_id,
+            caption=p_txt,
+            reply_markup=posted_markup(
+                p_txt, post))
+    except Exception as e:
+        raise Exception(e)
     message = "Congrats your post has been approved."
     await bot.send_message(post.user.bot_id, message, reply_markup=message_link_btn(str(response.message_id)))
 

@@ -1,3 +1,7 @@
+ACCOUNT_USER_MANAGE = [
+    {"label": "✍️ Edit", "id": "edit"},
+]
+
 BRANDS = [
     {"label": "Nikee", "id": "nikee"},
     {"label": "H&M", "id": "hnm"},

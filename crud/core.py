@@ -80,5 +80,10 @@ def get_store(store_id):
     return store
 
 
+def delete_store(store):
+    store = Store.get_by_id(store)
+    store.delete_instance()
+    return True
+
 def check_store_status(bid):
     pass

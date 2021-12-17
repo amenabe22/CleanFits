@@ -5,11 +5,11 @@ from forms.account import UserForm
 from aiogram.dispatcher import FSMContext
 from utils.bot_helpers import make_markup
 from aiogram.dispatcher.filters import Text
-from constants.menu_keyboards import BASIC_ACCOUNT
-from aiogram.dispatcher.filters.builtin import CommandStart
 from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 from aiogram.dispatcher.filters.state import State, StatesGroup
+from constants.menu_keyboards import BASIC_ACCOUNT, HELP_MESSAGE
 from crud.core import create_bot_user, user_exists, update_basic
+from aiogram.dispatcher.filters.builtin import CommandStart, CommandHelp
 
 
 class Form(StatesGroup):
@@ -49,9 +49,16 @@ async def cancel_handler(message: types.Message, state: FSMContext):
     await message.reply('State Cancelled.', reply_markup=make_markup(BASIC_ACCOUNT))
 
 
+@dp.message_handler(CommandHelp())
+async def help(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        await state.finish()
+
+    await message.answer(HELP_MESSAGE, parse_mode="html")
+
+
 @dp.message_handler(CommandStart())
 async def bot_start(message: types.Message, state: FSMContext):
-    print("dawg", "**********")
     async with state.proxy() as data:
         # await state.set_state(PostForm.item_type)
         await state.finish()
