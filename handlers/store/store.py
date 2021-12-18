@@ -162,9 +162,9 @@ async def callback_loc_action(query: types.CallbackQuery, callback_data: typing.
         )
         await state.finish()
     await bot.edit_message_text(
-        "Form completed",
+        "Form completed \nAdd Item: /add",
         query.from_user.id,
-        query.message.message_id
+        query.message.message_id,
     )
 
 
@@ -193,16 +193,11 @@ async def callback_vote_action(query: types.CallbackQuery, callback_data: typing
     async with state.proxy() as data:
         data["cat"] = callback_data_action
 
-    # update amount of likes in storage
-    # likes[query.from_user.id] = likes_count
-    # await bot.edit_message_text("asdf")
     await bot.edit_message_text(
         "Do you have a physical location ?",
-        # f'You voted {callback_data_action}! Now you have {12} vote[s].',
         query.from_user.id,
         query.message.message_id,
         reply_markup=get_loc_opts()
-        # reply_markup=types.ReplyKeyboardRemove()
     )
 
 
@@ -224,5 +219,4 @@ async def callback_close_store(query: types.CallbackQuery, callback_data: typing
 
 @ dp.errors_handler(exception=MessageNotModified)
 async def message_not_modified_handler(update, error):
-    print("Got some Error")
     return True  # errors_handler must return True if error was handled correctly

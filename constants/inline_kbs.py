@@ -21,12 +21,12 @@ PROD_CATS = [
 POST_MANAGE = [
     {"label": "✅ Approve", "id": "approve"},
     {"label": "❌ Decline", "id": "decline"},
-    {"label": "🛑 Report", "id": "report"},
+    # {"label": "🛑 Report", "id": "report"},
 ]
 
 POST_USER_MANAGE = [
     {"label": "✅ Publish", "id": "publish"},
-    {"label": "✍️ Wait", "id": "wait"},
+    # {"label": "✍️ Wait", "id": "wait"},
     {"label": "🛑 Nah", "id": "nah"},
 ]
 

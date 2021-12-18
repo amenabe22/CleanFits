@@ -61,7 +61,7 @@ def post_inline_kb(cbk, post):
             x["label"], callback_data=cbk.new(action=x["id"], sid=post)) for x in [
             {"label": "✅ Approve", "id": "approve"},
             {"label": "❌ Decline", "id": "decline"},
-            {"label": "🛑 Report", "id": "report"},
+            # {"label": "🛑 Report", "id": "report"},
         ]
     ])
     return ikb
@@ -77,6 +77,7 @@ class PostForm(StatesGroup):
     contact_method = State()
     contact = State()
 
+
 @dp.message_handler(commands='quick')
 async def quick_post_cmd(message: types.Message, state: FSMContext):
     await state.set_state(PostForm.item_name)
@@ -85,6 +86,7 @@ async def quick_post_cmd(message: types.Message, state: FSMContext):
         await message.answer(
             "Enter Item Name",
         )
+
 
 @dp.message_handler(QuickPostFilter())
 async def quick_post(message: types.Message, state: FSMContext):
@@ -132,18 +134,8 @@ async def process_pics(messages: [types.Message],  state: FSMContext):
     print("bpt 1")
     media = types.MediaGroup()
     for x in messages:
-        # if ix == 0:
-        #     media.attach_photo(x.photo[0].file_id, caption="He",)
         media.attach_photo(x.photo[0].file_id)
-    # async with state.proxy() as data:
-    #     # await state.set_state(PostForm.item_type)
-    #     await state.finish()
 
-    # # print(media, "whoa")
-    # # await bot.send_photo(-1001702851184, mgs)
-    # await bot.send_media_group(-1001702851184, media)
-    # await bot.send_message(-1001702851184, "some message", reply_markup=inline_kb(POST_MANAGE, post_cb))
-    # # await bot.send_message(-1001702851184, "Wazzaa")
     await messages[0].answer("Form complete")
 
 
@@ -173,6 +165,16 @@ async def process_name(message: types.Message, state: FSMContext):
         await message.reply("What is the price ?")
 
 # All callback handelers go under here
+
+
+@ dp.callback_query_handler(post_cb.filter(action=["promote"]))
+async def callback_promote_action(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
+    await query.answer()
+    await bot.edit_message_text(
+        "Promotions Coming soon",
+        query.from_user.id,
+        query.message.message_id
+    )
 
 
 @ dp.callback_query_handler(post_cb.filter(action=["addpost"]))
@@ -223,6 +225,13 @@ async def callback_post_approve(query: types.CallbackQuery, callback_data: typin
     print(callback_data, "bitch stfu")
     print(callback_data_action)
     pst = get_post(callback_data['sid'])
+    if callback_data_action == "nah":
+        await bot.edit_message_text(
+            "Cancelled",
+            # f'You voted {callback_data_action}! Now you have {12} vote[s].',
+            query.from_user.id,
+            query.message.message_id,)
+
     if callback_data_action == "publish":
         # callback_data_action = callback_data['action']
         async with state.proxy() as data:
@@ -242,15 +251,10 @@ async def callback_post_approve(query: types.CallbackQuery, callback_data: typin
 
             await bot.edit_message_text(
                 format_from_post(pst),
-                # f'You voted {callback_data_action}! Now you have {12} vote[s].',
                 query.from_user.id,
                 query.message.message_id,
-                # reply_markup=brands_kb()
-                # reply_markup=types.ReplyKeyboardRemove()
             )
-            # print("+++", pst, "+++")
-            # await bot.answer_callback_query(query.id, "THIS IS AN ALERT", show_alert=True)
-            # await bot.answer_callback_query
+
             await bot.send_message(
                 query.from_user.id,
                 "Thanks your post is sent for moderation we will let you know once it's approved !!!",
@@ -316,6 +320,25 @@ async def callback_post_brand(query: types.CallbackQuery, callback_data: typing.
     )
 
 
+@ dp.callback_query_handler(post_cb.filter(action=['decline']))
+async def callback_post_decline(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
+    await query.answer()
+    post = set_approval(callback_data["sid"], False)
+
+    txt = "Declined by @{}\n\n{}".format(
+        query.from_user.username, query.message.caption)
+
+    p_txt = "\n{}".format(query.message.caption)
+
+    await bot.edit_message_caption(
+        caption=txt,
+        chat_id=-1001702851184,
+        message_id=query.message.message_id
+    )
+    message = "Sorry your post has been declined please double check your content."
+    await bot.send_message(post.user.bot_id, message)
+
+
 @ dp.callback_query_handler(post_cb.filter(action=['approve']))
 async def callback_post_publish(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     await query.answer()
@@ -331,11 +354,7 @@ async def callback_post_publish(query: types.CallbackQuery, callback_data: typin
         chat_id=-1001702851184,
         message_id=query.message.message_id
     )
-    print("^"*30)
-    print(p_txt)
-    print("^"*30)
-    print(query.message.caption_entities)
-    print("^"*30)
+
     try:
         response = await bot.send_photo(
             caption_entities=query.message.caption_entities,
