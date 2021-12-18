@@ -4,11 +4,13 @@ ACCOUNT_USER_MANAGE = [
 
 BRANDS = [
     {"label": "Nikee", "id": "nikee"},
+    {"label": "Jordans", "id": "jays"},
     {"label": "H&M", "id": "hnm"},
     {"label": "Gucci", "id": "gucii"},
-    {"label": "Addidas", "id": "add"},
-    {"label": "Louis Vutton", "id": "lv"},
-    {"label": "Balenciaga", "id": "bal"}
+    {"label": "Adidas", "id": "add"},
+    {"label": "Louis Vuitton", "id": "lv"},
+    {"label": "Balenciaga", "id": "bal"},
+    {"label": "Other", "id": "other"}
 ]
 
 PROD_CATS = [

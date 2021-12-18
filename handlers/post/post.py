@@ -301,7 +301,7 @@ async def callback_contact_method(query: types.CallbackQuery, callback_data: typ
             )
 
 
-@ dp.callback_query_handler(post_cb.filter(action=['nikee', 'lv', 'bal', 'add']), state=PostForm.brand)
+@ dp.callback_query_handler(post_cb.filter(action=['nikee', 'gucii', 'hnm', 'add', 'lv', 'bal', 'add', 'other', 'jays']), state=PostForm.brand)
 async def callback_post_brand(query: types.CallbackQuery, callback_data: typing.Dict[str, str], state: FSMContext):
     # logging.info('Got this callback data: %r', callback_data)  # callback_data contains all info from callback data
     await query.answer()
